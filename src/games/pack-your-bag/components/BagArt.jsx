@@ -1,15 +1,15 @@
 // Flat illustrations of the four bags used on the Level Selection screen.
 const ART = {
-  // blue anime backpack (matches the 3D model): flap + strap + buckle + pocket
+  // orange toy backpack (matches the 3D model): flap + strap + buckle + pocket
   backpack: (
     <g stroke="#22203a" strokeWidth="2.5" strokeLinejoin="round">
-      <rect x="16" y="62" width="12" height="32" rx="5" fill="#4cb8f5" />
-      <rect x="92" y="62" width="12" height="32" rx="5" fill="#4cb8f5" />
-      <path d="M26 46 Q26 14 60 14 Q94 14 94 46 L94 92 Q94 106 80 106 L40 106 Q26 106 26 92Z" fill="#4cb8f5" />
-      <path d="M25 46 Q25 12 60 12 Q95 12 95 46 L95 52 Q60 68 25 52Z" fill="#2e5077" />
-      <rect x="55" y="6" width="10" height="50" rx="5" fill="#5677a3" />
+      <rect x="16" y="62" width="12" height="32" rx="5" fill="#f28a2e" />
+      <rect x="92" y="62" width="12" height="32" rx="5" fill="#f28a2e" />
+      <path d="M26 46 Q26 14 60 14 Q94 14 94 46 L94 92 Q94 106 80 106 L40 106 Q26 106 26 92Z" fill="#f28a2e" />
+      <path d="M25 46 Q25 12 60 12 Q95 12 95 46 L95 52 Q60 68 25 52Z" fill="#9a7468" />
+      <rect x="55" y="6" width="10" height="50" rx="5" fill="#86635a" />
       <rect x="53" y="38" width="14" height="14" rx="2" fill="none" stroke="#e8b130" strokeWidth="3" />
-      <path d="M36 80 L84 80 Q84 98 60 98 Q36 98 36 80Z" fill="#2e5077" />
+      <path d="M36 80 L84 80 Q84 98 60 98 Q36 98 36 80Z" fill="#9a7468" />
       <circle cx="60" cy="101" r="2.5" fill="#e8b130" strokeWidth="1.5" />
       <g stroke="none">
         <ellipse cx="49" cy="68" rx="4.5" ry="6" fill="#1b1f33" />
@@ -24,14 +24,14 @@ const ART = {
   ),
   backpackOpen: (
     <g stroke="#22203a" strokeWidth="2.5" strokeLinejoin="round">
-      <path d="M30 34 Q30 4 60 4 Q90 4 90 34Z" fill="#2e5077" />
+      <path d="M30 34 Q30 4 60 4 Q90 4 90 34Z" fill="#9a7468" />
       <rect x="36" y="18" width="13" height="34" rx="2" fill="#ffd23f" transform="rotate(-10 42 35)" />
       <rect x="51" y="14" width="13" height="38" rx="2" fill="#4cc26a" />
       <rect x="66" y="20" width="13" height="32" rx="2" fill="#ff7a59" transform="rotate(9 72 36)" />
-      <rect x="16" y="66" width="12" height="30" rx="5" fill="#4cb8f5" />
-      <rect x="92" y="66" width="12" height="30" rx="5" fill="#4cb8f5" />
-      <path d="M26 46 Q26 38 34 38 L86 38 Q94 38 94 46 L94 94 Q94 108 80 108 L40 108 Q26 108 26 94Z" fill="#4cb8f5" />
-      <path d="M36 84 L84 84 Q84 101 60 101 Q36 101 36 84Z" fill="#2e5077" />
+      <rect x="16" y="66" width="12" height="30" rx="5" fill="#f28a2e" />
+      <rect x="92" y="66" width="12" height="30" rx="5" fill="#f28a2e" />
+      <path d="M26 46 Q26 38 34 38 L86 38 Q94 38 94 46 L94 94 Q94 108 80 108 L40 108 Q26 108 26 94Z" fill="#f28a2e" />
+      <path d="M36 84 L84 84 Q84 101 60 101 Q36 101 36 84Z" fill="#9a7468" />
       <g stroke="none">
         <path d="M44 64 Q49 57 54 64" fill="none" stroke="#1b1f33" strokeWidth="3" strokeLinecap="round" />
         <path d="M66 64 Q71 57 76 64" fill="none" stroke="#1b1f33" strokeWidth="3" strokeLinecap="round" />

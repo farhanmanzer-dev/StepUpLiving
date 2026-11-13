@@ -64,7 +64,7 @@ export default function PackYourBag() {
 
   return (
     <main className="app" style={settings.brightness !== 1 ? { filter: `brightness(${settings.brightness})` } : undefined}>
-      {inMenu && <OutdoorScene soft={screen !== "title"} />}
+      {inMenu && <OutdoorScene soft={screen !== "title"} interactive={screen === "title"} />}
 
       {screen === "title" && <TitleScreen onPlay={play} />}
       {screen === "objectives" && <ObjectivesScreen onNext={() => go("levels")} />}

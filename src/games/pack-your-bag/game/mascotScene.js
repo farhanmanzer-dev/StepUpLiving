@@ -1,10 +1,10 @@
-// The anime backpack as a living mascot for the menu screens.
+// The toy backpack as a living mascot for the menu screens.
 // It bounces, sways, blinks, follows the pointer with its eyes and, when tapped,
 // jumps with a happy ^ ^ face and "talks" by flapping its lid.
 // 30 FPS cap, pauses when the tab is hidden; small transparent canvas.
 import * as THREE from "three";
 import { buildBackpack } from "./backpack.js";
-import { blob } from "./kit.js";
+import { blob, setupLook } from "./kit.js";
 
 const FRAME_MS = 1000 / 30;
 
@@ -16,10 +16,11 @@ export function createMascot(canvas, { onPoke } = {}) {
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(30, 1, 0.5, 60);
-  camera.position.set(0, 3.2, 12.5);
-  camera.lookAt(0, 1.95, 0);
-  scene.add(new THREE.HemisphereLight(0xffffff, 0xb8c8d8, 1.6));
-  const sun = new THREE.DirectionalLight(0xffffff, 1.7);
+  camera.position.set(0, 3.5, 13.8);
+  camera.lookAt(0, 2.3, 0);
+  const disposeLook = setupLook(renderer, scene, { envIntensity: 0.6 });
+  scene.add(new THREE.HemisphereLight(0xfff6e8, 0x9a8a78, 0.9));
+  const sun = new THREE.DirectionalLight(0xfff0dc, 2.2);
   sun.position.set(-4, 8, 7);
   scene.add(sun);
 
@@ -117,6 +118,11 @@ export function createMascot(canvas, { onPoke } = {}) {
 
   return {
     poke: onDown,
+    // happy jump without the "poke" callback (used when the game cheers)
+    jump() {
+      pokeT = 0;
+      bag.face.setMood("happy");
+    },
     destroy() {
       cancelAnimationFrame(raf);
       ro.disconnect();
@@ -124,6 +130,7 @@ export function createMascot(canvas, { onPoke } = {}) {
       canvas.removeEventListener("pointerdown", onDown);
       document.removeEventListener("visibilitychange", onVis);
       scene.traverse((o) => o.geometry && o.geometry.dispose());
+      disposeLook();
       renderer.dispose();
       renderer.forceContextLoss();
     },

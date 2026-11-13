@@ -1,26 +1,44 @@
 // Small helpers for building low-poly scenes from primitives.
 import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
+import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 
-// ---------------------------------------------------------------- anime look
-// Cel shading: a 3-step light ramp gives flat "anime" bands of light/shadow.
-let toonRamp = null;
-function getToonRamp() {
-  if (!toonRamp) {
-    toonRamp = new THREE.DataTexture(new Uint8Array([140, 205, 255]), 3, 1, THREE.RedFormat);
-    toonRamp.minFilter = toonRamp.magFilter = THREE.NearestFilter;
-    toonRamp.generateMipmaps = false;
-    toonRamp.needsUpdate = true;
-  }
-  return toonRamp;
-}
-
-// Toon materials are cached by colour so many meshes share one material.
+// ---------------------------------------------------------------- "toy" look
+// Soft, smooth-lit materials (like painted toys / Sims-style furniture):
+// physically based shading + an environment light + soft shadows.
+// Materials are cached by colour so many meshes share one material.
 const matCache = new Map();
-export function mat(color) {
-  if (!matCache.has(color)) matCache.set(color, new THREE.MeshToonMaterial({ color, gradientMap: getToonRamp() }));
-  return matCache.get(color);
+export function mat(color, opts) {
+  const key = opts ? `${color}-${JSON.stringify(opts)}` : color;
+  if (!matCache.has(key))
+    matCache.set(key, new THREE.MeshStandardMaterial({ color, roughness: 0.6, metalness: 0, ...opts }));
+  return matCache.get(key);
 }
+
+/**
+ * Renderer + scene setup for the soft toy look: filmic tone mapping, a
+ * blurred "studio room" environment for gentle bounce light and (optionally)
+ * soft real-time shadows. Returns a dispose function.
+ */
+export function setupLook(renderer, scene, { shadows = false, envIntensity = 0.55 } = {}) {
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.08;
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  const room = new RoomEnvironment();
+  const env = pmrem.fromScene(room, 0.04).texture;
+  room.traverse((o) => o.geometry && o.geometry.dispose());
+  pmrem.dispose();
+  scene.environment = env;
+  scene.environmentIntensity = envIntensity;
+  if (shadows) {
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  }
+  return () => env.dispose();
+}
+
+// Outlines are off in the toy look (kept so older call sites still work).
+export const STYLE = { outlines: false };
 
 // Ink outlines ("inverted hull"): a copy of each mesh, pushed out along its
 // normals and drawn back-faces only in a dark colour. Cheap and very anime.
@@ -47,6 +65,7 @@ function outlineMat(thickness, color) {
 const noRaycast = () => {};
 /** Adds ink outlines to every mesh under `root` (skips userData.noOutline). */
 export function addOutlines(root, thickness = 0.03, color = 0x22203a) {
+  if (!STYLE.outlines) return root;
   const list = [];
   root.traverse((o) => {
     if (o.isMesh && !o.userData.noOutline && !o.userData.isOutline) list.push(o);
@@ -66,15 +85,17 @@ export function mesh(geo, color, x = 0, y = 0, z = 0, rx = 0, ry = 0, rz = 0) {
   const m = new THREE.Mesh(geo, typeof color === "number" ? mat(color) : color);
   m.position.set(x, y, z);
   m.rotation.set(rx, ry, rz);
+  if (!m.material.isMeshBasicMaterial) m.castShadow = m.receiveShadow = true;
   return m;
 }
 
-export const box = (w, h, d) => new THREE.BoxGeometry(w, h, d);
-export const rbox = (w, h, d, r) => new RoundedBoxGeometry(w, h, d, 2, r);
-export const cyl = (rt, rb, h, s = 16) => new THREE.CylinderGeometry(rt, rb, h, s);
-export const sph = (r, w = 16, h = 12) => new THREE.SphereGeometry(r, w, h);
+// boxes get softly bevelled edges: nothing in a toy box has sharp corners
+export const box = (w, h, d) => new RoundedBoxGeometry(w, h, d, 2, Math.min(w, h, d) * 0.22);
+export const rbox = (w, h, d, r = Math.min(w, h, d) * 0.22) => new RoundedBoxGeometry(w, h, d, 3, r);
+export const cyl = (rt, rb, h, s = 24) => new THREE.CylinderGeometry(rt, rb, h, s);
+export const sph = (r, w = 24, h = 18) => new THREE.SphereGeometry(r, w, h);
 
-// Soft round "blob" shadow (replaces expensive real-time shadow maps).
+// Soft round "blob" contact shadow (adds grounding under the real shadows).
 let blobMat = null;
 function getBlobMat() {
   if (blobMat) return blobMat;
@@ -82,7 +103,7 @@ function getBlobMat() {
   c.width = c.height = 64;
   const g = c.getContext("2d");
   const grd = g.createRadialGradient(32, 32, 4, 32, 32, 32);
-  grd.addColorStop(0, "rgba(0,0,0,0.38)");
+  grd.addColorStop(0, "rgba(40,25,10,0.28)");
   grd.addColorStop(1, "rgba(0,0,0,0)");
   g.fillStyle = grd;
   g.fillRect(0, 0, 64, 64);

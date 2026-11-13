@@ -3,8 +3,9 @@
 // Performance choices (for low-end school PCs):
 //  * Renders ONLY when something changes (no constant 60 FPS loop);
 //    capped at 30 FPS while animating; stops entirely when the tab is hidden.
-//  * Lambert materials, 2 lights, NO real-time shadow maps (soft "blob"
-//    shadow textures instead), low-poly primitives, no post-processing.
+//  * Soft "toy" look: standard materials, an environment light and ONE soft
+//    shadow-casting light (smaller shadow map on phones), plus cheap blob
+//    contact shadows; primitives only, no post-processing.
 //  * Pixel ratio capped; antialias only on standard-density screens.
 //  * No model/texture downloads: everything is built from primitives.
 //
@@ -18,7 +19,8 @@
 //   onHint({ from, to } | null)           show/hide the hint hand (to = null means "tap")
 //   onFinish(result)                      round complete
 import * as THREE from "three";
-import { mesh, box, rbox, cyl, sph, blob, addOutlines } from "./kit.js";
+import { mesh, box, rbox, cyl, sph, blob, addOutlines, setupLook } from "./kit.js";
+import { buildRoom, addLights } from "./room.js";
 import { BUILD, ITEM_SETS } from "./items.js";
 import { buildBackpack, buildLunchBag, BACKPACK_SIZE, LUNCHBAG_SIZE } from "./backpack.js";
 import { beep, fanfare, speak, stopSpeech } from "./audio.js";
@@ -99,60 +101,11 @@ export function createGame(canvas, cb = {}, level) {
   renderer.outputColorSpace = THREE.SRGBColorSpace;
 
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0xfdf3e1);
+  scene.background = new THREE.Color(0xf3e4cc);
   const camera = new THREE.PerspectiveCamera(40, 1, 0.5, 80);
-  scene.add(new THREE.HemisphereLight(0xffffff, 0xb59a7a, 1.9));
-  const sun = new THREE.DirectionalLight(0xffffff, 1.6);
-  sun.position.set(-4, 12, 8);
-  scene.add(sun);
-
-  // ---------------------------------------------------------- room
-  function buildRoom() {
-    scene.add(mesh(new THREE.PlaneGeometry(60, 40), 0xd9b98f, 0, 0, 0, -Math.PI / 2));
-    scene.add(mesh(new THREE.CircleGeometry(4.2, 32), 0x9fc5a8, 5.2, 0.01, 0.6, -Math.PI / 2));
-    scene.add(mesh(new THREE.CircleGeometry(3.2, 32), 0xb7d8bd, 5.2, 0.015, 0.6, -Math.PI / 2));
-    scene.add(mesh(new THREE.PlaneGeometry(60, 20), 0xfff1d6, 0, 10, -6));
-    scene.add(mesh(box(60, 0.5, 0.1), 0xc89f72, 0, 0.25, -5.95));
-    // window with a little sun and cloud outside
-    scene.add(mesh(box(4.4, 3.2, 0.12), 0x9b6b45, -3, 7.6, -5.92));
-    scene.add(mesh(box(4.0, 2.8, 0.14), new THREE.MeshBasicMaterial({ color: 0xbfe3fb }), -3, 7.6, -5.9));
-    scene.add(mesh(new THREE.CircleGeometry(0.42, 20), new THREE.MeshBasicMaterial({ color: 0xffd23f }), -1.9, 8.4, -5.82));
-    const cloud = new THREE.MeshBasicMaterial({ color: 0xffffff });
-    for (const [x, y, r] of [[-4.0, 7.0, 0.32], [-3.6, 7.15, 0.42], [-3.15, 7.0, 0.3]])
-      scene.add(mesh(new THREE.CircleGeometry(r, 16), cloud, x, y, -5.82));
-    scene.add(mesh(box(0.12, 2.8, 0.18), 0x9b6b45, -3, 7.6, -5.86));
-    scene.add(mesh(box(4.0, 0.12, 0.18), 0x9b6b45, -3, 7.6, -5.86));
-    // wall clock
-    scene.add(mesh(cyl(0.8, 0.8, 0.12, 24), 0xffffff, 3.5, 8, -5.9, Math.PI / 2));
-    scene.add(mesh(new THREE.TorusGeometry(0.8, 0.07, 6, 28), 0x3b82c4, 3.5, 8, -5.83));
-    scene.add(mesh(box(0.06, 0.6, 0.05), 0x333344, 3.5, 8.25, -5.8));
-    scene.add(mesh(box(0.45, 0.06, 0.05), 0x333344, 3.7, 8, -5.8));
-    // party bunting across the wall
-    const flagGeo = new THREE.CircleGeometry(0.38, 3);
-    const flagCols = [0xff6b6b, 0xffd23f, 0x5cc0ea, 0x7ddc6f, 0xc58cf0];
-    for (let i = 0; i < 17; i++) {
-      const x = -10 + i * 1.25;
-      const y = 10.2 - 0.35 * Math.cos((x / 10) * Math.PI * 0.5);
-      scene.add(mesh(flagGeo, flagCols[i % flagCols.length], x, y, -5.85, 0, 0, -Math.PI / 2));
-    }
-    // potted plant behind the bag
-    scene.add(mesh(cyl(0.5, 0.38, 0.9, 14), 0xe0794a, 8.6, 0.45, -3.6));
-    for (const [x, y, z, r] of [[8.6, 1.5, -3.6, 0.55], [8.25, 1.2, -3.4, 0.4], [8.95, 1.25, -3.45, 0.42], [8.6, 2.0, -3.7, 0.35]])
-      scene.add(mesh(sph(r, 10, 8), 0x58b368, x, y, z));
-    const ps = blob(2.2);
-    ps.position.set(8.6, 0.02, -3.6);
-    scene.add(ps);
-    // table (with anime ink outlines)
-    const table = new THREE.Group();
-    table.add(mesh(rbox(9.6, 0.3, 5.0, 0.1), 0xb07a4f, -2.8, TABLE_Y - 0.15, 0));
-    for (const [x, z] of [[-7.2, -2.1], [1.6, -2.1], [-7.2, 2.1], [1.6, 2.1]])
-      table.add(mesh(rbox(0.35, TABLE_Y - 0.3, 0.35, 0.06), 0x8a5a36, x, (TABLE_Y - 0.3) / 2, z));
-    scene.add(addOutlines(table, 0.04));
-    const tShadow = blob(11);
-    tShadow.scale.set(1, 0.6, 1);
-    tShadow.position.set(-2.8, 0.02, 0.2);
-    scene.add(tShadow);
-  }
+  const disposeLook = setupLook(renderer, scene, { shadows: true, envIntensity: 0.45 });
+  const small = Math.min(window.innerWidth, window.innerHeight) < 600;
+  addLights(scene, { shadowSize: small ? 1024 : 2048 });
 
   // ---------------------------------------------------------- bag (anime model with a face)
   function buildBag() {
@@ -694,7 +647,7 @@ export function createGame(canvas, cb = {}, level) {
   ro.observe(canvas);
   cleanups.push(() => ro.disconnect());
 
-  buildRoom();
+  buildRoom(scene, TABLE_Y);
   resize();
   newRound();
 
@@ -713,7 +666,11 @@ export function createGame(canvas, cb = {}, level) {
       for (const id of timeouts) clearTimeout(id);
       for (const fn of cleanups) fn();
       stopSpeech();
-      scene.traverse((o) => o.geometry && o.geometry.dispose());
+      scene.traverse((o) => {
+        o.geometry && o.geometry.dispose();
+        if (o.material && o.material.map) o.material.map.dispose();
+      });
+      disposeLook();
       renderer.dispose();
       renderer.forceContextLoss(); // safe: React creates a fresh canvas per engine
     },

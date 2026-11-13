@@ -11,8 +11,9 @@ export default function BackpackMascot(props) {
   return wide ? <Mascot {...props} /> : null;
 }
 
-function Mascot({ greeting = "Hi! Let's pack!", className = "" }) {
+function Mascot({ greeting = "Hi! Let's pack!", className = "", say = null }) {
   const hostRef = useRef(null);
+  const mascotRef = useRef(null);
   const [line, setLine] = useState(null);
   const [failed, setFailed] = useState(false);
 
@@ -39,14 +40,23 @@ function Mascot({ greeting = "Hi! Let's pack!", className = "" }) {
       setFailed(true);
       return undefined;
     }
+    mascotRef.current = mascot;
     // say hello on its own shortly after the screen opens
     const hello = setTimeout(() => setLine({ text: greeting, id: performance.now() }), 900);
     return () => {
       clearTimeout(hello);
+      mascotRef.current = null;
       mascot.destroy();
       canvas.remove();
     };
   }, [greeting]);
+
+  // the parent screen can make the mascot react (jump + speech bubble)
+  useEffect(() => {
+    if (!say) return;
+    setLine({ text: say.text, id: say.id });
+    mascotRef.current?.jump();
+  }, [say]);
 
   // hide the bubble after a while
   useEffect(() => {
