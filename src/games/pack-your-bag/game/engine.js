@@ -103,7 +103,7 @@ export function createGame(canvas, cb = {}, level) {
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0xf3e4cc);
   const camera = new THREE.PerspectiveCamera(40, 1, 0.5, 80);
-  const disposeLook = setupLook(renderer, scene, { shadows: true, envIntensity: 0.45 });
+  const disposeLook = setupLook(renderer, scene, { shadows: true, envIntensity: 0.35 });
   const small = Math.min(window.innerWidth, window.innerHeight) < 600;
   addLights(scene, { shadowSize: small ? 1024 : 2048 });
 

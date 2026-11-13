@@ -1,33 +1,12 @@
-// Full-screen illustrated backdrop for the menu screens (pure SVG, no images).
+// 2D fallback backdrop (pure SVG) used when the 3D school yard cannot start.
 // It "covers" the screen like background-size: cover.
 // With `interactive`, children can tap the sun, clouds, trees, flowers, the
 // school clock and the birds: each one reacts with an animation and a sound.
-import { beep } from "../game/audio.js";
-import { poke } from "../game/fx.js";
+import { poke, sfx } from "../game/fx.js";
 
 const tapper = (cls, ms, sound) => (e) => {
   poke(e.currentTarget, cls, ms);
   sound();
-};
-
-// ------------------------------------------------------------ sounds
-const sfx = {
-  sun: () => beep([880, 1320], 260, 0.12, "sine"),
-  cloud: () => {
-    beep([300], 120, 0.14, "sine");
-    setTimeout(() => beep([450], 160, 0.12, "sine"), 90);
-  },
-  tree: () => {
-    beep([220, 330], 140, 0.1, "triangle");
-    setTimeout(() => beep([180], 120, 0.12, "sine"), 520);
-    setTimeout(() => beep([160], 120, 0.12, "sine"), 640);
-  },
-  flower: () => beep([1047, 1568], 200, 0.1, "triangle"),
-  clock: () => {
-    beep([784], 380, 0.14, "triangle");
-    setTimeout(() => beep([622], 520, 0.14, "triangle"), 320);
-  },
-  bird: () => [1800, 2200, 1900, 2400].forEach((f, i) => setTimeout(() => beep([f], 70, 0.06, "sine"), i * 70)),
 };
 
 // ------------------------------------------------------------ pieces

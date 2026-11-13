@@ -4,7 +4,7 @@ import "./pack-your-bag.css";
 import { LEVELS } from "./levels.js";
 import { loadSettings, saveSettings, loadStars, saveStars } from "./storage.js";
 import { setVolumes, startMusic, unlockAudio, click } from "./game/audio.js";
-import OutdoorScene from "./components/OutdoorScene.jsx";
+import SchoolScene3D from "./components/SchoolScene3D.jsx";
 import TitleScreen from "./components/TitleScreen.jsx";
 import ObjectivesScreen from "./components/ObjectivesScreen.jsx";
 import LevelSelect from "./components/LevelSelect.jsx";
@@ -64,7 +64,7 @@ export default function PackYourBag() {
 
   return (
     <main className="app" style={settings.brightness !== 1 ? { filter: `brightness(${settings.brightness})` } : undefined}>
-      {inMenu && <OutdoorScene soft={screen !== "title"} interactive={screen === "title"} />}
+      {inMenu && <SchoolScene3D soft={screen !== "title"} />}
 
       {screen === "title" && <TitleScreen onPlay={play} />}
       {screen === "objectives" && <ObjectivesScreen onNext={() => go("levels")} />}

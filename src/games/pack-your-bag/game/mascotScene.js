@@ -18,9 +18,9 @@ export function createMascot(canvas, { onPoke } = {}) {
   const camera = new THREE.PerspectiveCamera(30, 1, 0.5, 60);
   camera.position.set(0, 3.5, 13.8);
   camera.lookAt(0, 2.3, 0);
-  const disposeLook = setupLook(renderer, scene, { envIntensity: 0.6 });
-  scene.add(new THREE.HemisphereLight(0xfff6e8, 0x9a8a78, 0.9));
-  const sun = new THREE.DirectionalLight(0xfff0dc, 2.2);
+  const disposeLook = setupLook(renderer, scene, { envIntensity: 0.35 });
+  scene.add(new THREE.HemisphereLight(0xfff6e8, 0x9a8a78, 0.55));
+  const sun = new THREE.DirectionalLight(0xfff0dc, 1.7);
   sun.position.set(-4, 8, 7);
   scene.add(sun);
 

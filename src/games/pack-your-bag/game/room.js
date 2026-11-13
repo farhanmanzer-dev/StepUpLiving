@@ -386,8 +386,8 @@ export function buildRoom(scene, TABLE_Y) {
 // ---------------------------------------------------------------- lights
 /** Warm afternoon light with soft real shadows + a cool fill from the right. */
 export function addLights(scene, { shadowSize = 2048 } = {}) {
-  scene.add(new THREE.HemisphereLight(0xfff6e8, 0x8a6e52, 0.75));
-  const sun = new THREE.DirectionalLight(0xfff0dc, 2.3);
+  scene.add(new THREE.HemisphereLight(0xfff6e8, 0x8a6e52, 0.55));
+  const sun = new THREE.DirectionalLight(0xfff0dc, 1.8);
   sun.position.set(-7, 16, 11);
   sun.castShadow = true;
   sun.shadow.mapSize.set(shadowSize, shadowSize);
@@ -397,7 +397,7 @@ export function addLights(scene, { shadowSize = 2048 } = {}) {
   sun.shadow.normalBias = 0.03;
   sun.shadow.radius = 4;
   scene.add(sun);
-  const fill = new THREE.DirectionalLight(0xdde8ff, 0.55);
+  const fill = new THREE.DirectionalLight(0xdde8ff, 0.4);
   fill.position.set(9, 7, 8);
   scene.add(fill);
   return sun;

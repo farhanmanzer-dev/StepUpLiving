@@ -119,6 +119,8 @@ html.pyb-lock, html.pyb-lock body { overflow: hidden; height: 100%; }
 
 /* soft = blurred, pastel backdrop behind dialogs (static: cheap to draw) */
 .outdoor.soft svg { filter: blur(5px) saturate(0.75); transform: scale(1.05); }
+.yard-canvas { display: block; width: 100%; height: 100%; touch-action: manipulation; transition: filter 0.4s, transform 0.4s; }
+.outdoor.soft .yard-canvas { filter: blur(5px) saturate(0.8); transform: scale(1.05); }
 .outdoor.soft * { animation: none !important; }
 .outdoor.soft::after { content: ""; position: absolute; inset: 0; background: rgba(214, 238, 228, 0.55); }
 

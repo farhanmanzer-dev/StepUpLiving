@@ -20,9 +20,10 @@ export function mat(color, opts) {
  * blurred "studio room" environment for gentle bounce light and (optionally)
  * soft real-time shadows. Returns a dispose function.
  */
-export function setupLook(renderer, scene, { shadows = false, envIntensity = 0.55 } = {}) {
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.08;
+export function setupLook(renderer, scene, { shadows = false, envIntensity = 0.35 } = {}) {
+  // Neutral keeps toy colours true (ACES washed oranges out to yellow)
+  renderer.toneMapping = THREE.NeutralToneMapping;
+  renderer.toneMappingExposure = 1.0;
   const pmrem = new THREE.PMREMGenerator(renderer);
   const room = new RoomEnvironment();
   const env = pmrem.fromScene(room, 0.04).texture;

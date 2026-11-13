@@ -57,9 +57,9 @@ export function getBagThumbs() {
         renderer.setSize(SIZE, SIZE, false);
         renderer.outputColorSpace = THREE.SRGBColorSpace;
         const scene = new THREE.Scene();
-        const disposeLook = setupLook(renderer, scene, { envIntensity: 0.6 });
-        scene.add(new THREE.HemisphereLight(0xfff6e8, 0x9a8a78, 0.9));
-        const sun = new THREE.DirectionalLight(0xfff0dc, 2.2);
+        const disposeLook = setupLook(renderer, scene, { envIntensity: 0.35 });
+        scene.add(new THREE.HemisphereLight(0xfff6e8, 0x9a8a78, 0.55));
+        const sun = new THREE.DirectionalLight(0xfff0dc, 1.7);
         sun.position.set(-4, 8, 7);
         scene.add(sun);
         const camera = new THREE.PerspectiveCamera(28, 1, 0.5, 80);
