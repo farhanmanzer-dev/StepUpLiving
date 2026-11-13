@@ -78,12 +78,23 @@ export function createGame(canvas, cb = {}, level) {
 
   // ---------------------------------------------------------- renderer
   const dpr = window.devicePixelRatio || 1;
-  const renderer = new THREE.WebGLRenderer({
-    canvas,
-    antialias: dpr < 1.5,
-    powerPreference: "low-power",
-    stencil: false,
-  });
+  let renderer;
+  try {
+    renderer = new THREE.WebGLRenderer({
+      canvas,
+      antialias: dpr < 1.5,
+      powerPreference: "default",
+      stencil: false,
+    });
+  } catch (e) {
+    // Tag real "no WebGL" failures so the UI can tell them apart from bugs.
+    const err = new Error(`WebGL could not start: ${e?.message || e}`);
+    err.code = "NO_WEBGL";
+    throw err;
+  }
+  // If the GPU resets (driver update, sleep, too many tabs), three.js rebuilds
+  // its state on "restored"; we just need to draw again.
+  canvas.addEventListener("webglcontextrestored", () => invalidate());
   renderer.setPixelRatio(Math.min(dpr, 1.5));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
 

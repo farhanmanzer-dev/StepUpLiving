@@ -33,10 +33,12 @@ const sph = (r, w = 16, h = 12) => new THREE.SphereGeometry(r, w, h);
 const PROPS = [
   function backpack() {
     const g = new THREE.Group();
-    g.add(mesh(rbox(0.72, 0.82, 0.46, 0.16), 0xd8414f, 0, 0.41, 0));
-    g.add(mesh(rbox(0.54, 0.36, 0.14, 0.08), 0x9c2638, 0, 0.3, 0.24));
-    g.add(mesh(rbox(0.12, 0.12, 0.05, 0.03), 0xffd23f, 0, 0.62, 0.24));
-    const h = mesh(new THREE.TorusGeometry(0.15, 0.04, 6, 12, Math.PI), 0x9c2638, 0, 0.82, 0);
+    // the blue backpack from the game
+    g.add(mesh(rbox(0.72, 0.82, 0.46, 0.2), 0x4cb8f5, 0, 0.41, 0));
+    g.add(mesh(rbox(0.76, 0.34, 0.5, 0.14), 0x2e5077, 0, 0.68, 0));
+    g.add(mesh(rbox(0.5, 0.28, 0.12, 0.1), 0x2e5077, 0, 0.24, 0.24));
+    g.add(mesh(rbox(0.1, 0.12, 0.04, 0.02), 0xe8b130, 0, 0.56, 0.26));
+    const h = mesh(new THREE.TorusGeometry(0.15, 0.04, 6, 12, Math.PI), 0x5677a3, 0, 0.82, 0);
     g.add(h);
     return g;
   },
@@ -89,28 +91,116 @@ const PROPS = [
   },
 ];
 
+// A chibi (big-head) school child with an anime face and a mini blue backpack.
+const flatMat = new Map();
+const flat = (c) => {
+  if (!flatMat.has(c)) flatMat.set(c, new THREE.MeshBasicMaterial({ color: c }));
+  return flatMat.get(c);
+};
+// a soft, flattened sphere "sticker" for face details
+function sticker(rx, ry, color, x, y, z, depth = 0.03) {
+  const m = new THREE.Mesh(sph(1, 16, 12), flat(color));
+  m.scale.set(rx, ry, depth);
+  m.position.set(x, y, z);
+  return m;
+}
+
 function buildCharacter() {
+  const SKIN = 0xffd9b8, HAIR = 0x5a3a26, SHIRT = 0xffffff, TIE = 0xe2475a, SHORTS = 0x2e5077;
   const g = new THREE.Group();
+  const size = new THREE.Group(); // overall size (g.scale is used by the pop-in tween)
+  size.scale.setScalar(1.2);
+  g.add(size);
   const body = new THREE.Group(); // squash & stretch happens here
-  g.add(body);
-  body.add(mesh(new THREE.CapsuleGeometry(0.3, 0.42, 4, 12), 0x3f7fd9, 0, 0.52, 0));
-  body.add(mesh(sph(0.34), 0xffcfa3, 0, 1.18, 0));
-  const hair = mesh(sph(0.35, 16, 8), 0x3a2a20, 0, 1.26, -0.04);
-  hair.scale.set(1, 0.7, 1);
-  body.add(hair);
+  size.add(body);
+
+  // ---- body: shirt, little tie, shorts, legs, shoes, arms
+  body.add(mesh(new THREE.CapsuleGeometry(0.27, 0.22, 4, 14), SHIRT, 0, 0.62, 0));
+  body.add(mesh(new THREE.CylinderGeometry(0.29, 0.31, 0.2, 16), SHORTS, 0, 0.36, 0));
+  const tie = mesh(new THREE.ConeGeometry(0.06, 0.22, 4), TIE, 0, 0.66, 0.27);
+  tie.rotation.x = Math.PI;
+  body.add(tie);
   for (const x of [-0.12, 0.12]) {
-    body.add(mesh(sph(0.05, 8, 6), 0x1f2433, x, 1.2, 0.3));
-    const cheek = mesh(sph(0.06, 8, 6), 0xff9d9d, x * 1.8, 1.09, 0.26);
-    cheek.scale.z = 0.4;
-    body.add(cheek);
+    body.add(mesh(cyl(0.075, 0.07, 0.2, 10), SKIN, x, 0.18, 0));
+    body.add(mesh(rbox(0.16, 0.1, 0.24, 0.05), 0x2b3550, x, 0.05, 0.04)); // shoes
   }
-  const smile = mesh(new THREE.TorusGeometry(0.09, 0.022, 6, 12, Math.PI), 0x1f2433, 0, 1.08, 0.31);
+  for (const s of [-1, 1]) {
+    const arm = mesh(new THREE.CapsuleGeometry(0.07, 0.2, 4, 8), SHIRT, s * 0.33, 0.64, 0);
+    arm.rotation.z = s * 0.35;
+    body.add(arm);
+    body.add(mesh(sph(0.075, 10, 8), SKIN, s * 0.4, 0.48, 0)); // hands
+  }
+
+  // ---- mini blue backpack (matches the game's backpack)
+  body.add(mesh(rbox(0.44, 0.48, 0.2, 0.1), 0x4cb8f5, 0, 0.68, -0.33));
+  body.add(mesh(rbox(0.46, 0.2, 0.22, 0.08), 0x2e5077, 0, 0.86, -0.33));
+  for (const x of [-0.16, 0.16]) body.add(mesh(rbox(0.06, 0.4, 0.04, 0.02), 0x2e5077, x, 0.7, -0.24));
+
+  // ---- big round head
+  const head = new THREE.Group();
+  head.position.y = 1.2;
+  body.add(head);
+  const R = 0.42;
+  head.add(mesh(sph(R, 24, 18), SKIN, 0, 0, 0));
+  for (const s of [-1, 1]) head.add(mesh(sph(0.09, 10, 8), SKIN, s * R, -0.04, 0)); // ears
+
+  // hair: top cap down to the eyebrows, fuller at the back, spiky fringe
+  const cap = mesh(new THREE.SphereGeometry(R + 0.035, 24, 12, 0, Math.PI * 2, 0, Math.PI * 0.46), HAIR, 0, 0.02, 0);
+  head.add(cap);
+  const back = mesh(sph(R + 0.02, 20, 14), HAIR, 0, 0.02, -0.07);
+  back.scale.set(1, 0.95, 0.95);
+  head.add(back);
+  const fringe = [[-0.22, 0.4], [-0.08, 0.5], [0.07, 0.48], [0.21, 0.38]];
+  for (const [x, rot] of fringe) {
+    const spike = mesh(new THREE.ConeGeometry(0.1, 0.22, 8), HAIR, x, 0.08, Math.sqrt(R * R - x * x) - 0.02);
+    spike.rotation.set(Math.PI - 0.35, 0, x > 0 ? -rot * 0.4 : rot * 0.4);
+    head.add(spike);
+  }
+  for (const s of [-1, 1]) {
+    const tuft = mesh(new THREE.ConeGeometry(0.08, 0.26, 8), HAIR, s * 0.36, -0.02, 0.12);
+    tuft.rotation.set(Math.PI, 0, s * -0.25);
+    head.add(tuft);
+  }
+  const ahoge = mesh(new THREE.ConeGeometry(0.05, 0.22, 6), HAIR, 0.05, R + 0.12, -0.02); // anime cowlick
+  ahoge.rotation.z = -0.5;
+  head.add(ahoge);
+
+  // anime face (unlit stickers so it always reads clearly)
+  const face = new THREE.Group();
+  const eyes = [];
+  for (const s of [-1, 1]) {
+    const x = s * 0.15, y = -0.06;
+    const z = Math.sqrt(R * R - x * x - y * y) + 0.005;
+    const eye = new THREE.Group();
+    eye.position.set(x, y, z);
+    eye.rotation.y = Math.asin(x / R);
+    eye.add(sticker(0.085, 0.11, 0xffffff, 0, 0, 0));
+    eye.add(sticker(0.065, 0.09, 0x6b3f1f, 0, -0.01, 0.01));
+    eye.add(sticker(0.035, 0.05, 0x1b1410, 0, 0, 0.02));
+    eye.add(sticker(0.026, 0.028, 0xffffff, -0.025, 0.035, 0.03, 0.01));
+    eye.add(sticker(0.012, 0.012, 0xffffff, 0.025, -0.035, 0.03, 0.01));
+    const lash = new THREE.Mesh(new THREE.TorusGeometry(0.09, 0.014, 4, 12, Math.PI * 0.8), flat(0x2a1a12));
+    lash.rotation.z = Math.PI * 0.1;
+    lash.scale.y = 1.2;
+    lash.position.z = 0.02;
+    eye.add(lash);
+    face.add(eye);
+    eyes.push(eye);
+    // blush
+    const bx = s * 0.25, by = -0.17;
+    const bz = Math.sqrt(R * R - bx * bx - by * by) + 0.004;
+    const blush = sticker(0.06, 0.03, 0xff9db5, bx, by, bz, 0.01);
+    blush.rotation.y = Math.asin(bx / R);
+    face.add(blush);
+  }
+  const smile = new THREE.Mesh(new THREE.TorusGeometry(0.05, 0.014, 4, 12, Math.PI), flat(0x7a2a2a));
   smile.rotation.z = Math.PI;
-  body.add(smile);
-  body.add(mesh(rbox(0.42, 0.44, 0.2, 0.08), 0xffc93c, 0, 0.62, -0.3)); // little backpack
-  for (const x of [-0.13, 0.13]) body.add(mesh(rbox(0.16, 0.12, 0.26, 0.05), 0x2b3550, x, 0.06, 0.04));
+  smile.position.set(0, -0.2, Math.sqrt(R * R - 0.04) + 0.005);
+  face.add(smile);
+  head.add(face);
+
   g.rotation.y = 0.55; // face a little toward the climb
-  return { group: g, body };
+  return { group: g, body, head, eyes };
 }
 
 function softShadowTexture() {
@@ -241,6 +331,9 @@ export function createStepsScene(canvas, { reducedMotion = false } = {}) {
     last = now;
     root.rotation.y += (target.x * 0.18 - root.rotation.y) * 0.06;
     root.rotation.x += (target.y * 0.05 - root.rotation.x) * 0.06;
+    // blink every ~3 seconds
+    const open = now % 3100 < 130 ? 0.12 : 1;
+    for (const e of hero.eyes) e.scale.y = open;
     renderer.render(scene, camera);
   }
   const start = () => { if (!raf && active && !document.hidden) raf = requestAnimationFrame(frame); };
